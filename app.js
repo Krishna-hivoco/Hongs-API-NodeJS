@@ -41,9 +41,7 @@ export const createApp = () => {
     res.header("Access-Control-Allow-Credentials", true);
     return next();
   });
-  app.use("/", (req, res) => {
-    res.send("API Working now..");
-  });
+ 
 
   return app;
 };
