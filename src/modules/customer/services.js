@@ -26,9 +26,47 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
   const [gender_data] = await connection.execute(finalBaseQuery, params);
   return { count: gender_data[0], result };
 };
+const dateWiseDashboardGraph = async (
+  user,
+  branch_id,
+  start_date,
+  end_date
+) => {
+  assert(
+    user.role == "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are not authorized person.")
+  );
+
+  const connection = await createConnection();
+
+  const malequery = `
+  SELECT SUM(c.male_count) AS total_male_count FROM customer_data as c
+  JOIN hongs_branch as b
+  WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
+  AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
+`;
+  const [male_rows] = await connection.execute(malequery, [
+    start_date,
+    end_date,
+    branch_id,
+  ]);
+  const femalequery = `
+  SELECT SUM(c.female_count) AS total_female_count FROM customer_data as c
+  JOIN hongs_branch as b
+  WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
+  AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
+`;
+  const [female_rows] = await connection.execute(femalequery, [
+    start_date,
+    end_date,
+    branch_id,
+  ]);
+  return { male: male_rows[0], female: female_rows[0] };
+};
 
 const notificationService = {
   getAll,
+  dateWiseDashboardGraph,
 };
 
 export default notificationService;
