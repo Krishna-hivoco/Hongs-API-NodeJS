@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import cookieParser from "cookie-parser";
-import "./src/config/mongodb.js"
+import "./src/config/mongodb.js";
 import authModule from "./src/modules/auth/index.js";
 import notificationModule from "./src/modules/notification/index.js";
 import commonModule from "./src/modules/common/index.js";
@@ -27,7 +27,6 @@ export const createApp = () => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.use(cookieParser());
-
   app.use((req, res, next) => {
     const allowedOrigins = ["http://localhost:3000"];
     const origin = req.headers.origin;
@@ -41,6 +40,9 @@ export const createApp = () => {
     );
     res.header("Access-Control-Allow-Credentials", true);
     return next();
+  });
+  app.use("/", (req, res) => {
+    res.send("API Working now..");
   });
 
   return app;
