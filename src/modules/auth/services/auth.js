@@ -13,7 +13,6 @@ const SignUp = async (data) => {
   const [result] = await connection.execute(query, [
     data.name,
     data.email,
-
     hashpassword,
     data.role,
   ]);
@@ -54,11 +53,15 @@ const SignIn = async (data) => {
       role: user.role,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "24h" } // Token will expire in 1 hour
+    { expiresIn: "24h" } // Token will expire in 24 hour
   );
 
   delete user.password;
-  return { ...user, token };
+  assert(
+    user.role == "super_admin",
+    createError(StatusCodes.NOT_FOUND, "You are an anonymous user")
+  );
+  return { ...user, role: "Super Admin", token };
 };
 
 const authService = {
