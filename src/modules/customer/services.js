@@ -1,7 +1,7 @@
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../config/db.js";
+import { getConnection } from "../../config/db.js";
 
 const getAll = async (user, branch_id, filter_date, page, limit) => {
   assert(
@@ -15,7 +15,7 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     filters.push("today_date = ?");
     params.push(filter_date);
   }
-  const connection = await createConnection();
+  const connection = await getConnection();
   const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
   const baseQueryFindSum =
     "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count  FROM customer_data WHERE 1=1";
@@ -37,7 +37,7 @@ const dateWiseDashboardGraph = async (
     createError(StatusCodes.UNAUTHORIZED, "You are not authorized person.")
   );
 
-  const connection = await createConnection();
+  const connection = await getConnection();
 
   const malequery = `
   SELECT SUM(c.male_count) AS total_male_count FROM customer_data as c

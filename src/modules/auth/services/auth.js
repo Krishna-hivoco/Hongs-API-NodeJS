@@ -3,11 +3,11 @@ import jwt from "jsonwebtoken";
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../../config/db.js";
+import { getConnection } from "../../../config/db.js";
 
 const SignUp = async (data) => {
   const hashpassword = await bcrypt.hash(data.password, 10);
-  const connection = await createConnection();
+  const connection = await getConnection();
   const query =
     "INSERT INTO auth (name, email,password, role) VALUES (?, ?,?, ?)";
   const [result] = await connection.execute(query, [
@@ -32,7 +32,7 @@ const SignIn = async (data) => {
     )
   );
 
-  const connection = await createConnection();
+  const connection = await getConnection();
   const query = "SELECT * FROM auth WHERE email=?";
   const [rows] = await connection.execute(query, [data.email]);
   assert(

@@ -1,7 +1,7 @@
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../config/db.js";
+import { getConnection } from "../../config/db.js";
 
 const getAllInfo = async (user, branch_id, filter_date, limit, page) => {
   assert(
@@ -9,7 +9,7 @@ const getAllInfo = async (user, branch_id, filter_date, limit, page) => {
     createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
   );
   const skip = (page - 1) * limit;
-  const connection = await createConnection();
+  const connection = await getConnection();
   const baseQuery = `
   SELECT * FROM upselling
   WHERE 1 = 1

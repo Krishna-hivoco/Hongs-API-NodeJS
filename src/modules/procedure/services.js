@@ -1,8 +1,7 @@
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../config/db.js";
-
+import { getConnection } from "../../config/db.js";
 
 const getAll = async (user, branch_id, filter_date, page, limit) => {
   assert(
@@ -16,7 +15,7 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     filters.push("today_date = ?");
     params.push(filter_date);
   }
-  const connection = await createConnection();
+  const connection = await getConnection();
   const baseQuery = "SELECT * FROM three_step_followup WHERE 1=1";
   const baseQueryFindSum =
     "SELECT SUM(all_step_followed) AS all_step_followed, SUM(partially_step_followed) AS partially_step_followed, SUM(no_step_followed) AS no_step_followed  FROM three_step_followup WHERE 1=1";

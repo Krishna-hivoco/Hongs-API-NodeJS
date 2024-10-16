@@ -1,14 +1,14 @@
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../config/db.js";
+import { getConnection } from "../../config/db.js";
 
 const getBranchesInfo = async (user) => {
   assert(
     user.role == "super_admin",
     createError(StatusCodes.UNAUTHORIZED, "You are not authorized person")
   );
-  const connection = await createConnection();
+  const connection = await getConnection();
   const query = `SELECT * FROM hongs_branch`;
   const [rows] = await connection.execute(query);
 
@@ -21,7 +21,7 @@ const getDashboardCardsInfo = async (user, branch_id) => {
     createError(StatusCodes.UNAUTHORIZED, "You are not authorized person")
   );
 
-  const connection = await createConnection();
+  const connection = await getConnection();
   const notificationquery = `
   WITH current_month AS (
     SELECT COUNT(*) AS total_notifications
@@ -89,10 +89,12 @@ const getDashboardCardsInfo = async (user, branch_id) => {
     END AS status
   FROM current_month cm, previous_month pm;
 `;
+
   const [upsell_attempted_rows] = await connection.execute(
     upsellattemptedquery,
     [branch_id, branch_id]
   );
+
   const upsells_attempted_rows = upsell_attempted_rows[0];
   const total_order_query = `
   WITH current_month AS (
@@ -129,6 +131,7 @@ const getDashboardCardsInfo = async (user, branch_id) => {
     branch_id,
   ]);
   const total_orders_rows = total_order_rows[0];
+
   return {
     notification: notification_rows,
     upsell_attempted: upsells_attempted_rows,
@@ -141,7 +144,7 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
     createError(StatusCodes.UNAUTHORIZED, "You are not authorized person")
   );
 
-  const connection = await createConnection();
+  const connection = await getConnection();
   const customerquery = `
   WITH current_month AS (
     SELECT SUM(male_count+female_count) AS total_customers

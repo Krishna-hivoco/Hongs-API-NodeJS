@@ -1,11 +1,11 @@
 import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
-import { createConnection } from "../../config/db.js";
+import { getConnection } from "../../config/db.js";
 import { timeAndDateFormate } from "../../helper/commonFunction.js";
 
 const createNotification = async (data) => {
-  const connection = await createConnection();
+  const connection = await getConnection();
   const query =
     "INSERT INTO notification (branch_id, message,today_date,time_of_message,action_taken) VALUES (?, ?,?,?,?)";
 
@@ -39,7 +39,7 @@ const showAllNotification = async (
     createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
   );
   const skip = (page - 1) * limit;
-  const connection = await createConnection();
+  const connection = await getConnection();
   const baseQuery = `
   SELECT notification.*, hongs_branch.branch_name, hongs_branch.location 
   FROM notification
@@ -63,7 +63,7 @@ const openNotification = async (user, branch_id, id) => {
     user.role === "super_admin",
     createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
   );
-  const connection = await createConnection();
+  const connection = await getConnection();
   const query = `SELECT notification.*, hongs_branch.branch_name, hongs_branch.location 
     FROM notification
     JOIN hongs_branch ON notification.branch_id = hongs_branch.branch_id WHERE hongs_branch.branch_id=? AND notification.notification_id=?`;
@@ -83,7 +83,7 @@ const messageCount = async (user, branch_id, filter_date) => {
     filters.push("notification.today_date = ?");
     params.push(filter_date);
   }
-  const connection = await createConnection();
+  const connection = await getConnection();
   const baseQuery = `SELECT message, COUNT(*) as message_count
 FROM notification
 WHERE 1=1
@@ -106,7 +106,7 @@ const dashboardDateWiseGraph = async (
     user.role === "super_admin",
     createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
   );
-  const connection = await createConnection();
+  const connection = await getConnection();
 
   const query = `
   SELECT DATE_FORMAT(STR_TO_DATE(n.today_date, '%m/%d/%Y'), '%Y-%m-%d') AS formatted_date,
