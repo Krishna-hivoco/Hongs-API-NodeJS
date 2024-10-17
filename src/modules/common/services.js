@@ -9,10 +9,14 @@ const getBranchesInfo = async (user) => {
     createError(StatusCodes.UNAUTHORIZED, "You are not authorized person")
   );
   const connection = await getConnection();
-  const query = `SELECT * FROM hongs_branch`;
-  const [rows] = await connection.execute(query);
+  try {
+    const query = `SELECT * FROM hongs_branch`;
+    const [rows] = await connection.execute(query);
 
-  return rows;
+    return rows;
+  } finally {
+    connection.release();
+  }
 };
 
 const getDashboardCardsInfo = async (user, branch_id) => {
@@ -22,7 +26,8 @@ const getDashboardCardsInfo = async (user, branch_id) => {
   );
 
   const connection = await getConnection();
-  const notificationquery = `
+  try {
+    const notificationquery = `
   WITH current_month AS (
     SELECT COUNT(*) AS total_notifications
     FROM notification
@@ -53,13 +58,13 @@ const getDashboardCardsInfo = async (user, branch_id) => {
   FROM current_month cm, previous_month pm;
 `;
 
-  const [notification_row] = await connection.execute(notificationquery, [
-    branch_id,
-    branch_id,
-  ]);
-  const notification_rows = notification_row[0];
+    const [notification_row] = await connection.execute(notificationquery, [
+      branch_id,
+      branch_id,
+    ]);
+    const notification_rows = notification_row[0];
 
-  const upsellattemptedquery = `
+    const upsellattemptedquery = `
   WITH current_month AS (
     SELECT upsell_attempted AS total_upsell_attempted
     FROM upselling
@@ -90,13 +95,13 @@ const getDashboardCardsInfo = async (user, branch_id) => {
   FROM current_month cm, previous_month pm;
 `;
 
-  const [upsell_attempted_rows] = await connection.execute(
-    upsellattemptedquery,
-    [branch_id, branch_id]
-  );
+    const [upsell_attempted_rows] = await connection.execute(
+      upsellattemptedquery,
+      [branch_id, branch_id]
+    );
 
-  const upsells_attempted_rows = upsell_attempted_rows[0];
-  const total_order_query = `
+    const upsells_attempted_rows = upsell_attempted_rows[0];
+    const total_order_query = `
   WITH current_month AS (
     SELECT upsell_attempted AS total_order
     FROM upselling
@@ -126,17 +131,20 @@ const getDashboardCardsInfo = async (user, branch_id) => {
     END AS status
   FROM current_month cm, previous_month pm;
 `;
-  const [total_order_rows] = await connection.execute(total_order_query, [
-    branch_id,
-    branch_id,
-  ]);
-  const total_orders_rows = total_order_rows[0];
+    const [total_order_rows] = await connection.execute(total_order_query, [
+      branch_id,
+      branch_id,
+    ]);
+    const total_orders_rows = total_order_rows[0];
 
-  return {
-    notification: notification_rows,
-    upsell_attempted: upsells_attempted_rows,
-    order: total_orders_rows,
-  };
+    return {
+      notification: notification_rows,
+      upsell_attempted: upsells_attempted_rows,
+      order: total_orders_rows,
+    };
+  } finally {
+    connection.release();
+  }
 };
 const getDashboardCardsInfo2 = async (user, branch_id) => {
   assert(
@@ -145,7 +153,8 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
   );
 
   const connection = await getConnection();
-  const customerquery = `
+  try {
+    const customerquery = `
   WITH current_month AS (
     SELECT SUM(male_count+female_count) AS total_customers
     FROM customer_data
@@ -176,13 +185,13 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
   FROM current_month cm, previous_month pm;
 `;
 
-  const [customer_row] = await connection.execute(customerquery, [
-    branch_id,
-    branch_id,
-  ]);
-  const customers_rows = customer_row[0];
+    const [customer_row] = await connection.execute(customerquery, [
+      branch_id,
+      branch_id,
+    ]);
+    const customers_rows = customer_row[0];
 
-  const upsellattemptedquery = `
+    const upsellattemptedquery = `
   WITH current_month AS (
     SELECT upsell_attempted AS total_upsell_attempted
     FROM upselling
@@ -212,12 +221,12 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
     END AS status
   FROM current_month cm, previous_month pm;
 `;
-  const [upsell_attempted_rows] = await connection.execute(
-    upsellattemptedquery,
-    [branch_id, branch_id]
-  );
-  const upsells_attempted_rows = upsell_attempted_rows[0];
-  const total_order_query = `
+    const [upsell_attempted_rows] = await connection.execute(
+      upsellattemptedquery,
+      [branch_id, branch_id]
+    );
+    const upsells_attempted_rows = upsell_attempted_rows[0];
+    const total_order_query = `
   WITH current_month AS (
     SELECT upsell_attempted AS total_order
     FROM upselling
@@ -247,16 +256,19 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
     END AS status
   FROM current_month cm, previous_month pm;
 `;
-  const [total_order_rows] = await connection.execute(total_order_query, [
-    branch_id,
-    branch_id,
-  ]);
-  const total_orders_rows = total_order_rows[0];
-  return {
-    customer: customers_rows,
-    upsell_attempted: upsells_attempted_rows,
-    order: total_orders_rows,
-  };
+    const [total_order_rows] = await connection.execute(total_order_query, [
+      branch_id,
+      branch_id,
+    ]);
+    const total_orders_rows = total_order_rows[0];
+    return {
+      customer: customers_rows,
+      upsell_attempted: upsells_attempted_rows,
+      order: total_orders_rows,
+    };
+  } finally {
+    connection.release();
+  }
 };
 
 export const commonServices = {

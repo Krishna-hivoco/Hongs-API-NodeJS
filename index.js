@@ -1,4 +1,5 @@
 import { createApp, useModules, finishApp } from "./app.js";
+
 const app = createApp();
 
 useModules(app);

@@ -11,6 +11,7 @@ import commonModule from "./src/modules/common/index.js";
 import customerModule from "./src/modules/customer/index.js";
 import upsellingModule from "./src/modules/upselling/index.js";
 import procedureModule from "./src/modules/procedure/index.js";
+import { initDbConnection } from "./src/config/db.js";
 
 dotenv.config();
 const modules = [
@@ -27,6 +28,7 @@ export const createApp = () => {
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(bodyParser.json());
   app.use(cookieParser());
+  initDbConnection();
   // app.use((req, res, next) => {
   //   const allowedOrigins = ["http://localhost:3000"];
   //   const origin = req.headers.origin;

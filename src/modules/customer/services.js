@@ -16,15 +16,19 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     params.push(filter_date);
   }
   const connection = await getConnection();
-  const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
-  const baseQueryFindSum =
-    "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count  FROM customer_data WHERE 1=1";
-  const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
-  const finalQuery = `${baseQuery}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
-  const [result] = await connection.execute(finalQuery, params);
-  const finalBaseQuery = `${baseQueryFindSum}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
-  const [gender_data] = await connection.execute(finalBaseQuery, params);
-  return { count: gender_data[0], result };
+  try {
+    const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
+    const baseQueryFindSum =
+      "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count  FROM customer_data WHERE 1=1";
+    const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+    const finalQuery = `${baseQuery}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    const [result] = await connection.execute(finalQuery, params);
+    const finalBaseQuery = `${baseQueryFindSum}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    const [gender_data] = await connection.execute(finalBaseQuery, params);
+    return { count: gender_data[0], result };
+  } finally {
+    connection.release();
+  }
 };
 const dateWiseDashboardGraph = async (
   user,
@@ -38,7 +42,7 @@ const dateWiseDashboardGraph = async (
   );
 
   const connection = await getConnection();
-
+try {
   const malequery = `
   SELECT SUM(c.male_count) AS total_male_count FROM customer_data as c
   JOIN hongs_branch as b
@@ -62,6 +66,9 @@ const dateWiseDashboardGraph = async (
     branch_id,
   ]);
   return { male: male_rows[0], female: female_rows[0] };
+} finally {
+  connection.release();
+}
 };
 
 const notificationService = {
