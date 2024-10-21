@@ -191,41 +191,41 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
     ]);
     const customers_rows = customer_row[0];
 
-    const upsellattemptedquery = `
+    const upsellsuccessfulquery = `
   WITH current_month AS (
-    SELECT upsell_attempted AS total_upsell_attempted
+    SELECT upsell_successful AS total_upsell_successful
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE())
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE())
       AND branch_id = ?
   ),
   previous_month AS (
-    SELECT COUNT(*) AS total_upsell_attempted
+    SELECT COUNT(*) AS total_upsell_successful
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
       AND branch_id = ?
   )
   SELECT
-    cm.total_upsell_attempted AS current_month_total,
-    pm.total_upsell_attempted AS previous_month_total,
+    cm.total_upsell_successful AS current_month_total,
+    pm.total_upsell_successful AS previous_month_total,
     CASE 
-      WHEN pm.total_upsell_attempted = 0 THEN NULL -- Avoid division by zero
-      ELSE ((cm.total_upsell_attempted - pm.total_upsell_attempted) / pm.total_upsell_attempted) * 100
+      WHEN pm.total_upsell_successful = 0 THEN NULL -- Avoid division by zero
+      ELSE ((cm.total_upsell_successful - pm.total_upsell_successful) / pm.total_upsell_successful) * 100
     END AS percentage_change,
     CASE
-      WHEN pm.total_upsell_attempted = 0 THEN 'no data for previous month'
-      WHEN cm.total_upsell_attempted > pm.total_upsell_attempted THEN 'gain'
-      WHEN cm.total_upsell_attempted < pm.total_upsell_attempted THEN 'loss'
+      WHEN pm.total_upsell_successful = 0 THEN 'no data for previous month'
+      WHEN cm.total_upsell_successful > pm.total_upsell_successful THEN 'gain'
+      WHEN cm.total_upsell_successful < pm.total_upsell_successful THEN 'loss'
       ELSE 'no change'
     END AS status
   FROM current_month cm, previous_month pm;
 `;
-    const [upsell_attempted_rows] = await connection.execute(
-      upsellattemptedquery,
+    const [upsell_successful_rows] = await connection.execute(
+      upsellsuccessfulquery,
       [branch_id, branch_id]
     );
-    const upsells_attempted_rows = upsell_attempted_rows[0];
+    const upsells_successful_rows = upsell_successful_rows[0];
     const total_order_query = `
   WITH current_month AS (
     SELECT upsell_attempted AS total_order
@@ -263,7 +263,7 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
     const total_orders_rows = total_order_rows[0];
     return {
       customer: customers_rows,
-      upsell_attempted: upsells_attempted_rows,
+      upsell_successful: upsells_successful_rows,
       order: total_orders_rows,
     };
   } finally {

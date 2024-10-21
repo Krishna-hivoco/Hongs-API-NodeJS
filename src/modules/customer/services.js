@@ -11,7 +11,7 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
   const skip = (page - 1) * limit;
   const filters = [`branch_id=${branch_id}`];
   const params = [];
-  if (filter_date) {
+  if (filter_date && filter_date.trim() !== "") {
     filters.push("today_date = ?");
     params.push(filter_date);
   }
@@ -42,33 +42,33 @@ const dateWiseDashboardGraph = async (
   );
 
   const connection = await getConnection();
-try {
-  const malequery = `
+  try {
+    const malequery = `
   SELECT SUM(c.male_count) AS total_male_count FROM customer_data as c
   JOIN hongs_branch as b
   WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
   AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
 `;
-  const [male_rows] = await connection.execute(malequery, [
-    start_date,
-    end_date,
-    branch_id,
-  ]);
-  const femalequery = `
+    const [male_rows] = await connection.execute(malequery, [
+      start_date,
+      end_date,
+      branch_id,
+    ]);
+    const femalequery = `
   SELECT SUM(c.female_count) AS total_female_count FROM customer_data as c
   JOIN hongs_branch as b
   WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
   AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
 `;
-  const [female_rows] = await connection.execute(femalequery, [
-    start_date,
-    end_date,
-    branch_id,
-  ]);
-  return { male: male_rows[0], female: female_rows[0] };
-} finally {
-  connection.release();
-}
+    const [female_rows] = await connection.execute(femalequery, [
+      start_date,
+      end_date,
+      branch_id,
+    ]);
+    return { male: male_rows[0], female: female_rows[0] };
+  } finally {
+    connection.release();
+  }
 };
 
 const notificationService = {
