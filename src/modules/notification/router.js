@@ -80,4 +80,23 @@ router.get(
   })
 );
 
+router.get(
+  "/new-notification",
+  authorization.auth,
+  httpHandler(async (req, res) => {
+    const user = req.user;
+    const result = await notificationService.newNotification(user);
+    res.send(result);
+  })
+);
+router.put(
+  "/update-status",
+  authorization.auth,
+  httpHandler(async (req, res) => {
+    const user = req.user;
+    const result = await notificationService.updateNotificationStatus(user);
+    res.send(result);
+  })
+);
+
 export default router;

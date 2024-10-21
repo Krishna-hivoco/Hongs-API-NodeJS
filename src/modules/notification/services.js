@@ -42,6 +42,9 @@ const showAllNotification = async (
     user.role === "super_admin",
     createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
   );
+  if (!filter_date) {
+    filter_date = "";
+  }
   const skip = (page - 1) * limit;
   const connection = await getConnection();
   try {
@@ -146,12 +149,44 @@ const dashboardDateWiseGraph = async (
   }
 };
 
+const newNotification = async (user) => {
+  assert(
+    user.role === "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
+  );
+  const connection = await getConnection();
+  try {
+    const query = `SELECT * FROM notification WHERE is_new = ?`;
+    const [rows] = await connection.execute(query, [1]); // Explicitly passing 0 instead of false
+    return rows;
+  } finally {
+    connection.release();
+  }
+};
+
+const updateNotificationStatus = async (user) => {
+  assert(
+    user.role === "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are Unauthorized.")
+  );
+  const connection = await getConnection();
+  try {
+    const query = `UPDATE notification SET is_new=? where is_new=?`;
+    const [rows] = await connection.execute(query, [0, 1]); // Explicitly passing 0 instead of false
+    return rows;
+  } finally {
+    connection.release();
+  }
+};
+
 const notificationService = {
   createNotification,
   showAllNotification,
   openNotification,
   messageCount,
   dashboardDateWiseGraph,
+  newNotification,
+  updateNotificationStatus,
 };
 
 export default notificationService;
