@@ -66,14 +66,14 @@ const getDashboardCardsInfo = async (user, branch_id) => {
 
     const upsellattemptedquery = `
   WITH current_month AS (
-    SELECT upsell_attempted AS total_upsell_attempted
+    SELECT SUM(upsell_attempted) AS total_upsell_attempted
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE())
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE())
       AND branch_id = ?
   ),
   previous_month AS (
-    SELECT COUNT(*) AS total_upsell_attempted
+     SELECT SUM(upsell_attempted) AS total_upsell_attempted
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
@@ -103,14 +103,14 @@ const getDashboardCardsInfo = async (user, branch_id) => {
     const upsells_attempted_rows = upsell_attempted_rows[0];
     const total_order_query = `
   WITH current_month AS (
-    SELECT upsell_attempted AS total_order
+   SELECT SUM(total_order) AS total_order
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE())
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE())
       AND branch_id = ?
   ),
   previous_month AS (
-    SELECT COUNT(*) AS total_order
+    SELECT SUM(total_order) AS total_order
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
@@ -193,14 +193,14 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
 
     const upsellsuccessfulquery = `
   WITH current_month AS (
-    SELECT upsell_successful AS total_upsell_successful
+    SELECT SUM(upsell_successful) AS total_upsell_successful
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE())
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE())
       AND branch_id = ?
   ),
   previous_month AS (
-    SELECT COUNT(*) AS total_upsell_successful
+    SELECT SUM(upsell_successful) AS total_upsell_successful
     FROM upselling
     WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
       AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
@@ -226,45 +226,10 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
       [branch_id, branch_id]
     );
     const upsells_successful_rows = upsell_successful_rows[0];
-    const total_order_query = `
-  WITH current_month AS (
-    SELECT upsell_attempted AS total_order
-    FROM upselling
-    WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE())
-      AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE())
-      AND branch_id = ?
-  ),
-  previous_month AS (
-    SELECT COUNT(*) AS total_order
-    FROM upselling
-    WHERE MONTH(STR_TO_DATE(today_date, '%m/%d/%Y')) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH)
-      AND YEAR(STR_TO_DATE(today_date, '%m/%d/%Y')) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH)
-      AND branch_id = ?
-  )
-  SELECT
-    cm.total_order AS current_month_total,
-    pm.total_order AS previous_month_total,
-    CASE 
-      WHEN pm.total_order = 0 THEN NULL -- Avoid division by zero
-      ELSE ((cm.total_order - pm.total_order) / pm.total_order) * 100
-    END AS percentage_change,
-    CASE
-      WHEN pm.total_order = 0 THEN 'no data for previous month'
-      WHEN cm.total_order > pm.total_order THEN 'gain'
-      WHEN cm.total_order < pm.total_order THEN 'loss'
-      ELSE 'no change'
-    END AS status
-  FROM current_month cm, previous_month pm;
-`;
-    const [total_order_rows] = await connection.execute(total_order_query, [
-      branch_id,
-      branch_id,
-    ]);
-    const total_orders_rows = total_order_rows[0];
+
     return {
       customer: customers_rows,
-      upsell_successful: upsells_successful_rows,
-      order: total_orders_rows,
+      upsell_successful: upsells_successful_rows
     };
   } finally {
     connection.release();
