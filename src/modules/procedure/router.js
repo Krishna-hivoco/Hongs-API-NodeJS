@@ -25,4 +25,22 @@ router.get(
   })
 );
 
+router.get(
+  "/dashboard/:branch_id",
+  authorization.auth,
+  httpHandler(async (req, res) => {
+    const user = req.user;
+    const { branch_id } = req.params;
+
+    const { start_date, end_date } = req.query;
+    const result = await notificationService.dateWiseDashboardGraph(
+      user,
+      branch_id,
+      start_date,
+      end_date
+    );
+    res.send(result);
+  })
+);
+
 export default router;

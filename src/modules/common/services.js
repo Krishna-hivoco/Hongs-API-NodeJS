@@ -236,8 +236,43 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
   }
 };
 
+
+const getDashboardSatisfiedGraph = async (
+  user,
+  branch_id,
+  start_date,
+  end_date
+) => {
+  assert(
+    user.role == "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are not authorized person.")
+  );
+
+  const connection = await getConnection();
+  try {
+  const query = `
+
+   SELECT 
+    DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%Y'), '%Y-%m-%d') AS formatted_date,
+    SUM(yes_count) AS total_yes_count,
+    SUM(no_count) AS total_no_count
+  FROM cus_satisfaction
+  WHERE STR_TO_DATE(today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') AND STR_TO_DATE(?, '%m/%d/%Y')
+  GROUP BY formatted_date
+  ORDER BY formatted_date;
+  
+`;
+
+  const [rows] = await connection.execute(query, [start_date, end_date]);
+  return rows;
+  } finally {
+    connection.release();
+  }
+};
+
 export const commonServices = {
   getBranchesInfo,
   getDashboardCardsInfo,
   getDashboardCardsInfo2,
+  getDashboardSatisfiedGraph,
 };

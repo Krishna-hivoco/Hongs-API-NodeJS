@@ -31,8 +31,66 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
   }
 };
 
+const dateWiseDashboardGraph = async (
+  user,
+  branch_id,
+  start_date,
+  end_date
+) => {
+  assert(
+    user.role == "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are not authorized person.")
+  );
+
+  const connection = await getConnection();
+  try {
+    const allquery = `
+  SELECT SUM(c.all_step_followed) AS all_step_followed FROM three_step_followup as c
+  JOIN hongs_branch as b
+  WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
+  AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
+`;
+    const [all_rows] = await connection.execute(allquery, [
+      start_date,
+      end_date,
+      branch_id,
+    ]);
+    const partialquery = `
+  SELECT SUM(c.partially_step_followed) AS total_partial_count FROM three_step_followup as c
+  JOIN hongs_branch as b
+  WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
+  AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
+`;
+
+    const [partial_rows] = await connection.execute(partialquery, [
+      start_date,
+      end_date,
+      branch_id,
+    ]);
+    const noquery = `
+  SELECT SUM(c.no_step_followed) AS total_no_count FROM three_step_followup as c
+  JOIN hongs_branch as b
+  WHERE STR_TO_DATE(c.today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') 
+  AND STR_TO_DATE(?, '%m/%d/%Y') AND c.branch_id=?;
+`;
+    const [no_rows] = await connection.execute(noquery, [
+      start_date,
+      end_date,
+      branch_id,
+    ]);
+    return {
+      all_step: all_rows[0],
+      partial_step: partial_rows[0],
+      no_step: no_rows[0],
+    };
+  } finally {
+    connection.release();
+  }
+};
+
 const procedureService = {
   getAll,
+  dateWiseDashboardGraph,
 };
 
 export default procedureService;
