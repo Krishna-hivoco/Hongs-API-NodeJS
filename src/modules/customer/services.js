@@ -17,15 +17,33 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
   }
   const connection = await getConnection();
   try {
-    const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
+    const baseQuery = "SELECT * FROM customer_data WHERE 1=1";
     const baseQueryFindSum =
-      "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count  FROM customer_data WHERE 1=1";
+      "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count FROM customer_data WHERE 1=1";
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+
+    // Final query for fetching customer data with ordering and pagination
     const finalQuery = `${baseQuery}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
     const [result] = await connection.execute(finalQuery, params);
-    const finalBaseQuery = `${baseQueryFindSum}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
+
+    // Final query for fetching aggregated counts without ordering and pagination
+    const finalBaseQuery = `${baseQueryFindSum}${whereClause}`;
+    console.log("finalBaseQuery", finalBaseQuery);
     const [gender_data] = await connection.execute(finalBaseQuery, params);
+
     return { count: gender_data[0], result };
+
+    // const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
+    // const baseQueryFindSum =
+    //   "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count  FROM customer_data WHERE 1=1";
+    // const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+    // const finalQuery = `${baseQuery}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    // const [result] = await connection.execute(finalQuery, params);
+    // const finalBaseQuery = `${baseQueryFindSum}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    // console.log("finalBaseQuery", finalBaseQuery);
+    // const [gender_data] = await connection.execute(finalBaseQuery, params);
+
+    // return { count: gender_data[0], result };
   } finally {
     connection.release();
   }

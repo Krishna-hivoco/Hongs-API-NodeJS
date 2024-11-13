@@ -23,7 +23,7 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
     const finalQuery = `${baseQuery}${whereClause} ORDER BY followUp_id DESC LIMIT ${limit} OFFSET ${skip}`;
     const [result] = await connection.execute(finalQuery, params);
-    const finalBaseQuery = `${baseQueryFindSum}${whereClause} ORDER BY followUp_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    const finalBaseQuery = `${baseQueryFindSum}${whereClause}`;
     const [gender_data] = await connection.execute(finalBaseQuery, params);
     return { count: gender_data[0], result };
   } finally {

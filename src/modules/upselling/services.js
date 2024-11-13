@@ -24,7 +24,7 @@ const getAllInfo = async (user, branch_id, filter_date, limit, page) => {
     }
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
     const finalQuery = `${baseQuery}${whereClause} ORDER BY upselling_id DESC LIMIT ${limit} OFFSET ${skip}`;
-    const finalNumericQuery = `${numericalQuery}${whereClause} ORDER BY upselling_id DESC LIMIT ${limit} OFFSET ${skip}`;
+    const finalNumericQuery = `${numericalQuery}${whereClause}`;
     const [result] = await connection.execute(finalQuery, params);
     const [resultNumeric] = await connection.execute(finalNumericQuery, params);
     return { count: resultNumeric[0], result };
