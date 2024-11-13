@@ -16,6 +16,9 @@ const getAllInfo = async (user, branch_id, filter_date, limit, page) => {
   WHERE 1 = 1
 `;
     const numericalQuery = `SELECT SUM(upsell_attempted) AS total_upsell_attempted, SUM(upsell_successful) AS total_upsell_successful FROM upselling WHERE 1=1`;
+
+    const baseQueryCount =
+      "SELECT COUNT(*) AS total_rows FROM upselling WHERE 1=1";
     const filters = [`branch_id=${branch_id}`];
     const params = [];
     if (filter_date) {
@@ -27,7 +30,10 @@ const getAllInfo = async (user, branch_id, filter_date, limit, page) => {
     const finalNumericQuery = `${numericalQuery}${whereClause}`;
     const [result] = await connection.execute(finalQuery, params);
     const [resultNumeric] = await connection.execute(finalNumericQuery, params);
-    return { count: resultNumeric[0], result };
+    const finalCountQuery = `${baseQueryCount}${whereClause}`;
+    const [countResult] = await connection.execute(finalCountQuery, params);
+    const totalRows = countResult[0].total_rows;
+    return { totalRows, count: resultNumeric[0], result };
   } finally {
     connection.release();
   }

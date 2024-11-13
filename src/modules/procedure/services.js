@@ -20,12 +20,20 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     const baseQuery = "SELECT * FROM three_step_followup WHERE 1=1";
     const baseQueryFindSum =
       "SELECT SUM(all_step_followed) AS all_step_followed, SUM(partially_step_followed) AS partially_step_followed, SUM(no_step_followed) AS no_step_followed  FROM three_step_followup WHERE 1=1";
+
+    const baseQueryCount =
+      "SELECT COUNT(*) AS total_rows FROM three_step_followup WHERE 1=1";
+
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
     const finalQuery = `${baseQuery}${whereClause} ORDER BY followUp_id DESC LIMIT ${limit} OFFSET ${skip}`;
     const [result] = await connection.execute(finalQuery, params);
     const finalBaseQuery = `${baseQueryFindSum}${whereClause}`;
     const [gender_data] = await connection.execute(finalBaseQuery, params);
-    return { count: gender_data[0], result };
+    //total row
+    const finalCountQuery = `${baseQueryCount}${whereClause}`;
+    const [countResult] = await connection.execute(finalCountQuery, params);
+    const totalRows = countResult[0].total_rows;
+    return { totalRows, count: gender_data[0], result };
   } finally {
     connection.release();
   }

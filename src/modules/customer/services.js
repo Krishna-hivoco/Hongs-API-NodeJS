@@ -21,17 +21,19 @@ const getAll = async (user, branch_id, filter_date, page, limit) => {
     const baseQueryFindSum =
       "SELECT SUM(male_count) AS total_male_count, SUM(female_count) AS total_female_count FROM customer_data WHERE 1=1";
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+    const baseQueryCount =
+      "SELECT COUNT(*) AS total_rows FROM customer_data WHERE 1=1";
 
     // Final query for fetching customer data with ordering and pagination
     const finalQuery = `${baseQuery}${whereClause} ORDER BY customerdata_id DESC LIMIT ${limit} OFFSET ${skip}`;
     const [result] = await connection.execute(finalQuery, params);
-
-    // Final query for fetching aggregated counts without ordering and pagination
     const finalBaseQuery = `${baseQueryFindSum}${whereClause}`;
-    console.log("finalBaseQuery", finalBaseQuery);
     const [gender_data] = await connection.execute(finalBaseQuery, params);
+    const finalCountQuery = `${baseQueryCount}${whereClause}`;
+    const [countResult] = await connection.execute(finalCountQuery, params);
+    const totalRows = countResult[0].total_rows;
 
-    return { count: gender_data[0], result };
+    return { totalRows, count: gender_data[0], result };
 
     // const baseQuery = "SELECT *  FROM customer_data WHERE 1=1";
     // const baseQueryFindSum =

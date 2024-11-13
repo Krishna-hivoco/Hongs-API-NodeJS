@@ -54,6 +54,9 @@ const showAllNotification = async (
   JOIN hongs_branch ON notification.branch_id = hongs_branch.branch_id
   WHERE 1 = 1
 `;
+
+    const baseQueryCount =
+      "SELECT COUNT(*) AS total_rows FROM notification WHERE 1=1";
     const filters = [`notification.branch_id=${branch_id}`];
     const params = [];
     if (filter_date) {
@@ -63,7 +66,10 @@ const showAllNotification = async (
     const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
     const finalQuery = `${baseQuery}${whereClause} ORDER BY notification.notification_id DESC LIMIT ${limit} OFFSET ${skip}`;
     const [rows] = await connection.execute(finalQuery, params);
-    return rows;
+    const finalCountQuery = `${baseQueryCount}${whereClause}`;
+    const [countResult] = await connection.execute(finalCountQuery, params);
+    const totalRows = countResult[0].total_rows;
+    return { totalRows, rows };
   } finally {
     connection.release();
   }
