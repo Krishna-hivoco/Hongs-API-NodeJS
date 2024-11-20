@@ -122,6 +122,33 @@ const getCardData = async (user, branch_id, filter_date) => {
         ).toFixed(2)
       : 0;
 
+      //fifth query
+
+       const notification_base_query = `SELECT count (message) as total_notification FROM notification
+    WHERE STR_TO_DATE(today_date, '%m/%d/%Y') BETWEEN ? AND ?`;
+       const notification_query = `${notification_base_query}${whereClause}`;
+       const [notificationCurrentResult] = await connection.execute(
+         notification_query,
+         [currentPeriodStartStr, currentPeriodEndStr]
+       );
+
+       const notificationCurrentSum =
+         notificationCurrentResult[0].total_notification || 0;
+       const notificationPreviousQuery = `${notification_base_query} ${whereClause}`;
+       const [notificationPreviousResult] = await connection.execute(
+         notificationPreviousQuery,
+         [previousPeriodStartStr, previousPeriodEndStr]
+       );
+       const notificationPreviousSum =
+         notificationPreviousResult[0].total_notification || 0;
+       const notificationPercentageIncrease = notificationPreviousSum
+         ? (
+             ((notificationCurrentSum - notificationPreviousSum) /
+               notificationPreviousSum) *
+             100
+           ).toFixed(2)
+         : 0;
+      
     return {
       period,
       customer: {
@@ -143,6 +170,11 @@ const getCardData = async (user, branch_id, filter_date) => {
         upsell_successfulCurrentSum,
         upsell_successfulPreviousSum,
         upsell_successfulPercentageIncrease,
+      },
+      notification: {
+        notificationCurrentSum,
+        notificationPreviousSum,
+        notificationPercentageIncrease,
       },
     };
   } finally {
