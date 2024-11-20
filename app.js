@@ -11,6 +11,8 @@ import commonModule from "./src/modules/common/index.js";
 import customerModule from "./src/modules/customer/index.js";
 import upsellingModule from "./src/modules/upselling/index.js";
 import procedureModule from "./src/modules/procedure/index.js";
+import dashboardModule from "./src/modules/dashboard/index.js";
+
 import { initDbConnection } from "./src/config/db.js";
 
 dotenv.config();
@@ -21,6 +23,7 @@ const modules = [
   customerModule,
   upsellingModule,
   procedureModule,
+  dashboardModule,
 ];
 
 export const createApp = () => {
@@ -68,6 +71,5 @@ export const finishApp = (app) => {
   app.use(notFoundHandler);
   app.use(errorHandler);
 };
-
 
 //709745
