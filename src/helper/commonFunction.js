@@ -34,6 +34,14 @@ export function selectedDateRange(period) {
         new Date().setMonth(new Date().getMonth() - 2)
       );
       break;
+    case "3m":
+      currentPeriodStart = new Date(
+        new Date().setMonth(new Date().getMonth() - 3)
+      );
+      previousPeriodStart = new Date(
+        new Date().setMonth(new Date().getMonth() - 6)
+      );
+      break;
     default:
       throw new Error("Invalid period specified");
   }
