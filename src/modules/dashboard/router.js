@@ -62,5 +62,19 @@ router.get(
     res.send(result);
   })
 );
+router.get(
+  "/satisfaction/:branch_id/:filter_date",
+  authorization.auth,
+  httpHandler(async (req, res) => {
+    const user = req.user;
+    const { branch_id, filter_date } = req.params;
+    const result = await dashboardService.satisfactionData(
+      user,
+      branch_id,
+      filter_date
+    );
+    res.send(result);
+  })
+);
 
 export default router;

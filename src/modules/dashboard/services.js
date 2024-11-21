@@ -195,42 +195,47 @@ const customersData = async (user, branch_id, filter_date) => {
     previousPeriodEndStr,
     period,
   } = selectedDateRange(filter_date);
-  const filters = [`branch_id=${branch_id}`];
-  const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
-  const base_query =
-    "SELECT SUM(male_count) as total_male_count, SUM(female_count) as total_female_count FROM customer_data WHERE STR_TO_DATE(today_date, '%m/%d/%Y') BETWEEN ? AND ? ";
-  const current_query = `${base_query}${whereClause}`;
+  try {
+    const filters = [`branch_id=${branch_id}`];
+    const whereClause = filters.length ? ` AND ${filters.join(" AND ")}` : "";
+    const base_query =
+      "SELECT SUM(male_count) as total_male_count, SUM(female_count) as total_female_count FROM customer_data WHERE STR_TO_DATE(today_date, '%m/%d/%Y') BETWEEN ? AND ? ";
+    const current_query = `${base_query}${whereClause}`;
 
-  const [currentResult] = await connection.execute(current_query, [
-    currentPeriodStartStr,
-    currentPeriodEndStr,
-  ]);
-  const currentMaleSum = Number(currentResult[0].total_male_count) || 0;
-  const currentFemaleSum = Number(currentResult[0].total_female_count) || 0;
-  const previous_query = `${base_query}${whereClause}`;
-  const [previousResult] = await connection.execute(previous_query, [
-    previousPeriodStartStr,
-    previousPeriodEndStr,
-  ]);
-  const previousMaleSum = Number(previousResult[0].total_male_count) || 0;
-  const previousFemaleSum = Number(previousResult[0].total_female_count) || 0;
-  const percentageIncrease =
-    previousMaleSum + previousFemaleSum
-      ? (
-          ((currentMaleSum +
-            currentFemaleSum -
-            (previousMaleSum + previousFemaleSum)) /
-            (previousMaleSum + previousFemaleSum)) *
-          100
-        ).toFixed(2)
-      : 0;
+    const [currentResult] = await connection.execute(current_query, [
+      currentPeriodStartStr,
+      currentPeriodEndStr,
+    ]);
+    const currentMaleSum = Number(currentResult[0].total_male_count) || 0;
+    const currentFemaleSum = Number(currentResult[0].total_female_count) || 0;
+    const previous_query = `${base_query}${whereClause}`;
+    const [previousResult] = await connection.execute(previous_query, [
+      previousPeriodStartStr,
+      previousPeriodEndStr,
+    ]);
+    const previousMaleSum = Number(previousResult[0].total_male_count) || 0;
+    const previousFemaleSum = Number(previousResult[0].total_female_count) || 0;
+    const percentageIncrease =
+      previousMaleSum + previousFemaleSum
+        ? (
+            ((currentMaleSum +
+              currentFemaleSum -
+              (previousMaleSum + previousFemaleSum)) /
+              (previousMaleSum + previousFemaleSum)) *
+            100
+          ).toFixed(2)
+        : 0;
 
-  return {
-    percentageIncrease,
-    currentMaleSum,
-    currentFemaleSum,
-  };
+    return {
+      percentageIncrease,
+      currentMaleSum,
+      currentFemaleSum,
+    };
+  } finally {
+    connection.release();
+  }
 };
+
 const upsellData = async (user, branch_id, filter_date) => {
   assert(
     user.role == "super_admin",
@@ -302,11 +307,70 @@ const procedureData = async (user, branch_id, filter_date) => {
   }
 };
 
+const satisfactionData = async (user, branch_id, filter_date) => {
+  assert(
+    user.role === "super_admin",
+    createError(StatusCodes.UNAUTHORIZED, "You are not authorized person.")
+  );
+
+  const connection = await getConnection();
+
+  try {
+    let interval;
+    switch (filter_date) {
+      case "7d":
+        interval = "7 DAY";
+        break;
+      case "14d":
+        interval = "14 DAY";
+        break;
+      case "1m":
+        interval = "1 MONTH";
+        break;
+      case "3m":
+        interval = "3 MONTH";
+        break;
+      default:
+        throw new Error("Invalid filter_date provided");
+    }
+
+    // Dynamic query construction
+    const query = `
+      SELECT 
+        DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%y'), '%m/%d/%y') AS date,
+        SUM(yes_count) AS yes,
+        SUM(no_count) AS no
+      FROM 
+        cus_satisfaction
+      WHERE 
+        STR_TO_DATE(today_date, '%m/%d/%y') >= CURDATE() - INTERVAL ${interval}
+        AND branch_id = ?
+      GROUP BY 
+        DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%y'), '%m/%d/%y')
+      ORDER BY 
+        STR_TO_DATE(today_date, '%m/%d/%y');
+    `;
+
+    console.log("Executing Query:", query, interval);
+    const [results] = await connection.execute(query, [branch_id]);
+    console.log("Query Results:", results);
+
+    return results.map((row) => ({
+      date: row.date,
+      yes: row.yes,
+      no: row.no,
+    }));
+  } finally {
+    connection.release();
+  }
+};
+
 const dashboardService = {
   getCardData,
   customersData,
   upsellData,
   procedureData,
+  satisfactionData,
 };
 
 export default dashboardService;
