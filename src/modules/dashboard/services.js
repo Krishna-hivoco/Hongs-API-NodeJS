@@ -316,54 +316,74 @@ const satisfactionData = async (user, branch_id, filter_date) => {
   const connection = await getConnection();
 
   try {
-    let interval;
+    // Calculate the date range based on the selected filter_date
+    let startDate;
+    let endDate = new Date(); // Today's date as end date
+
     switch (filter_date) {
       case "7d":
-        interval = "7 DAY";
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
         break;
       case "14d":
-        interval = "14 DAY";
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 14);
         break;
       case "1m":
-        interval = "1 MONTH";
+        startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 1);
         break;
       case "3m":
-        interval = "3 MONTH";
+        startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 3);
         break;
       default:
         throw new Error("Invalid filter_date provided");
     }
 
-    // Dynamic query construction
+    // Format dates to 'MM/DD/YYYY' for SQL compatibility
+    const startDateFormatted = startDate.toLocaleDateString("en-US");
+    const endDateFormatted = endDate.toLocaleDateString("en-US");
+
+    // Construct the query with the calculated date range
     const query = `
       SELECT 
-        DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%y'), '%m/%d/%y') AS date,
-        SUM(yes_count) AS yes,
-        SUM(no_count) AS no
+        DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%Y'), '%Y-%m-%d') AS formatted_date,
+        SUM(yes_count) AS total_yes_count,
+        SUM(no_count) AS total_no_count
       FROM 
         cus_satisfaction
       WHERE 
-        STR_TO_DATE(today_date, '%m/%d/%y') >= CURDATE() - INTERVAL ${interval}
+        STR_TO_DATE(today_date, '%m/%d/%Y') BETWEEN STR_TO_DATE(?, '%m/%d/%Y') AND STR_TO_DATE(?, '%m/%d/%Y')
         AND branch_id = ?
       GROUP BY 
-        DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%y'), '%m/%d/%y')
+        formatted_date
       ORDER BY 
-        STR_TO_DATE(today_date, '%m/%d/%y');
+        formatted_date;
     `;
 
-    console.log("Executing Query:", query, interval);
-    const [results] = await connection.execute(query, [branch_id]);
-    console.log("Query Results:", results);
+   
+
+    // Execute the query with the formatted date range and branch_id
+    const [results] = await connection.execute(query, [
+      startDateFormatted,
+      endDateFormatted,
+      branch_id,
+    ]);
+
+   
 
     return results.map((row) => ({
-      date: row.date,
-      yes: row.yes,
-      no: row.no,
+      date: row.formatted_date,
+      yes: row.total_yes_count,
+      no: row.total_no_count,
     }));
   } finally {
     connection.release();
   }
 };
+
+
 
 const dashboardService = {
   getCardData,
