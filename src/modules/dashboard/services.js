@@ -370,9 +370,6 @@ const satisfactionData = async (user, branch_id, filter_date) => {
       endDateFormatted,
       branch_id,
     ]);
-
-   
-
     return results.map((row) => ({
       date: row.formatted_date,
       yes: row.total_yes_count,
