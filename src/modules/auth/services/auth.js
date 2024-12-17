@@ -47,14 +47,12 @@ const SignIn = async (data) => {
       rows.length !== 0,
       createError(StatusCodes.NOT_FOUND, "You are an anonymous user")
     );
-
     const user = rows[0];
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
     assert(
       isPasswordValid,
       createError(StatusCodes.UNAUTHORIZED, "Incorrect Password")
     );
-
     const token = jwt.sign(
       {
         user_id: user.user_id,

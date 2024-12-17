@@ -2,6 +2,15 @@ import createError from "http-errors-lite";
 import { StatusCodes } from "http-status-codes";
 import assert from "assert";
 import { getConnection } from "../../config/db.js";
+import { config } from "dotenv";
+import twilio from "twilio";
+import sendmail from "../../helper/sendEmail.js";
+
+config();
+
+const accountSid = process.env.ACCOUNT_SID;
+const authToken = process.env.AUTH_TOKEN;
+const client = twilio(accountSid, authToken);
 
 const getBranchesInfo = async (user) => {
   assert(
@@ -17,6 +26,111 @@ const getBranchesInfo = async (user) => {
   } finally {
     connection.release();
   }
+};
+const sendNotification = async (
+  to,
+  branchName,
+  issueTitle,
+  issueDescription,
+  issueDetails
+) => {
+  const msg = {
+    to: to,
+    subject: `Urgent: ${issueTitle} at ${branchName}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${issueTitle} at ${branchName}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 40px auto;
+            border: 1px solid #e1e2e3;
+        }
+        .header {
+            text-align: center;
+            padding: 10px;
+            background-color: #e73946;
+            color: #ffffff;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .content h1 {
+            font-size: 24px;
+            color: #333333;
+        }
+        .content p {
+            font-size: 16px;
+            color: #666666;
+           
+        }
+       
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 20px 0;
+            background-color: #e73946;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #999999;
+            padding: 20px;
+        }
+        h1 {
+            color: #008CBA;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Urgent: ${issueTitle} at ${branchName}</h2>
+        </div>
+        <div class="content">
+            <h1>Dear Admin,</h1>
+            <p>${issueDescription}</p>
+            <p>Details:</p>
+            <ul>
+                ${issueDetails.map((detail) => `<li>${detail}</li>`).join("")}
+            </ul>
+            <p>Please take action to resolve this issue as soon as possible.</p>
+            <p>If you have any questions or need further details, feel free to contact us.</p>
+            <p>Best Regards,<br>Hong's Kitchen </p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Hong's Kitchen. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+    
+`,
+  };
+
+  await sendmail(msg);
+
+  return { msg: "Email send successfully" };
 };
 
 const getDashboardCardsInfo = async (user, branch_id) => {
@@ -229,13 +343,12 @@ const getDashboardCardsInfo2 = async (user, branch_id) => {
 
     return {
       customer: customers_rows,
-      upsell_successful: upsells_successful_rows
+      upsell_successful: upsells_successful_rows,
     };
   } finally {
     connection.release();
   }
 };
-
 
 const getDashboardSatisfiedGraph = async (
   user,
@@ -250,7 +363,7 @@ const getDashboardSatisfiedGraph = async (
 
   const connection = await getConnection();
   try {
-  const query = `
+    const query = `
 
    SELECT 
     DATE_FORMAT(STR_TO_DATE(today_date, '%m/%d/%Y'), '%Y-%m-%d') AS formatted_date,
@@ -263,8 +376,8 @@ const getDashboardSatisfiedGraph = async (
   
 `;
 
-  const [rows] = await connection.execute(query, [start_date, end_date]);
-  return rows;
+    const [rows] = await connection.execute(query, [start_date, end_date]);
+    return rows;
   } finally {
     connection.release();
   }
@@ -275,4 +388,5 @@ export const commonServices = {
   getDashboardCardsInfo,
   getDashboardCardsInfo2,
   getDashboardSatisfiedGraph,
+  sendNotification,
 };
