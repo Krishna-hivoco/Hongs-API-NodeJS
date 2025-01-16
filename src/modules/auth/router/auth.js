@@ -21,4 +21,23 @@ router.post(
   })
 );
 
+//Mic Auth
+
+// router.post(
+//   "/receptionist-register",
+//   httpHandler(async (req, res) => {
+//     const data = req.body;
+//     const result = await authService.ReceptionistSignUp(data);
+//     res.send(result);
+//   })
+// );
+router.post(
+  "/receptionist-login",
+  httpHandler(async (req, res) => {
+    const data = req.body;
+    const result = await authService.ReceptionistSignIn(data);
+    res.send(result);
+  })
+);
+
 export default router;

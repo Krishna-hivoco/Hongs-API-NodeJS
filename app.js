@@ -12,6 +12,8 @@ import customerModule from "./src/modules/customer/index.js";
 import upsellingModule from "./src/modules/upselling/index.js";
 import procedureModule from "./src/modules/procedure/index.js";
 import dashboardModule from "./src/modules/dashboard/index.js";
+import http from "http";
+
 
 import { initDbConnection } from "./src/config/db.js";
 
@@ -66,6 +68,8 @@ export const errorHandler = (err, req, res, _next) => {
     error: err.message,
   });
 };
+
+
 
 export const finishApp = (app) => {
   app.use(notFoundHandler);

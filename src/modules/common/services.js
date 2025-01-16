@@ -132,6 +132,95 @@ const sendNotification = async (
 
   return { msg: "Email send successfully" };
 };
+const sendUpsellEmail = async (to, branchName) => {
+  const msg = {
+    to: to,
+    subject: `Action Required: Upselling Opportunity at ${branchName}`,
+    html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upselling Opportunity</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 40px auto;
+            border: 1px solid #e1e2e3;
+        }
+        .header {
+            text-align: center;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #ffffff;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .content h1 {
+            font-size: 24px;
+            color: #333333;
+        }
+        .content p {
+            font-size: 16px;
+            color: #666666;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 20px 0;
+            background-color: #4caf50;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #999999;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Upselling Opportunity at ${branchName}</h2>
+        </div>
+        <div class="content">
+            <h1>Dear Team,</h1>
+            <p>Receptionist has not yet upsold a product/item to the customer.</p>
+            <p>We encourage you to visit the customer and discuss the benefits of purchasing <strong>our new product</strong>.</p>
+            <p>If you have any questions or need further support, please let us know.</p>
+            <p>Best Regards,<br>Hong's Kitchen</p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Hong's Kitchen. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+`,
+  };
+
+  await sendmail(msg);
+
+  return { msg: "Email send successfully" };
+};
 
 const getDashboardCardsInfo = async (user, branch_id) => {
   assert(
@@ -389,4 +478,5 @@ export const commonServices = {
   getDashboardCardsInfo2,
   getDashboardSatisfiedGraph,
   sendNotification,
+  sendUpsellEmail,
 };

@@ -55,7 +55,8 @@ router.post(
   "/send-notification",
   // authorization.auth,
   httpHandler(async (req, res) => {
-    const { to,branchName, issueTitle, issueDescription, issueDetails} = req.body;
+    const { to, branchName, issueTitle, issueDescription, issueDetails } =
+      req.body;
     const result = await commonServices.sendNotification(
       to,
       branchName,
@@ -66,5 +67,18 @@ router.post(
     res.send(result);
   })
 );
+router.post(
+  "/send-upselling-feedback",
+  // authorization.auth,
+  httpHandler(async (req, res) => {
+    const { to, branchName } = req.body;
+    const result = await commonServices.sendUpsellEmail(to, branchName);
+    res.send(result);
+  })
+);
+
+// io.on("connection", (socket) => {
+//   console.log("a user connected");
+// });
 
 export default router;
