@@ -14,7 +14,6 @@ import procedureModule from "./src/modules/procedure/index.js";
 import dashboardModule from "./src/modules/dashboard/index.js";
 import http from "http";
 
-
 import { initDbConnection } from "./src/config/db.js";
 
 dotenv.config();
@@ -35,7 +34,7 @@ export const createApp = () => {
   app.use(cookieParser());
   initDbConnection();
   // app.use((req, res, next) => {
-  //   const allowedOrigins = ["http://localhost:3000"];
+  //   const allowedOrigins = ["http://localhost:8810"];
   //   const origin = req.headers.origin;
   //   if (allowedOrigins.includes(origin)) {
   //     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -68,8 +67,6 @@ export const errorHandler = (err, req, res, _next) => {
     error: err.message,
   });
 };
-
-
 
 export const finishApp = (app) => {
   app.use(notFoundHandler);
