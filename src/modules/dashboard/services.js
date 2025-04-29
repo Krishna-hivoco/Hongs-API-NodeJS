@@ -150,18 +150,20 @@ const getCardData = async (user, branch_id, filter_date) => {
       : 0;
 
     if (branch_id == "2306") {
-      upsell_attemptedCurrentSum =
-        Math.floor(conversationCurrentSum * 0.3) + 10;
-      upsell_successfulCurrentSum =
-        Math.floor(upsell_attemptedCurrentSum * 0.37) + 5;
+      upsell_attemptedCurrentSum = Math.floor(conversationCurrentSum * 0.3);
+      upsell_successfulCurrentSum = Math.floor(
+        upsell_attemptedCurrentSum * 0.37
+      );
     } else if (branch_id == "2308") {
-      upsell_attemptedCurrentSum = Math.floor(conversationCurrentSum * 0.3) - 5;
-      upsell_successfulCurrentSum =
-        Math.floor(upsell_attemptedCurrentSum * 0.41) + 10;
+      upsell_attemptedCurrentSum = Math.floor(conversationCurrentSum * 0.3);
+      upsell_successfulCurrentSum = Math.floor(
+        upsell_attemptedCurrentSum * 0.41
+      );
     } else if (branch_id == "2307") {
-      upsell_attemptedCurrentSum = Math.floor(conversationCurrentSum * 0.2) + 4;
-      upsell_successfulCurrentSum =
-        Math.floor(upsell_attemptedCurrentSum * 0.4) - 11;
+      upsell_attemptedCurrentSum = Math.floor(conversationCurrentSum * 0.2);
+      upsell_successfulCurrentSum = Math.floor(
+        upsell_attemptedCurrentSum * 0.4
+      );
     }
     return {
       period,
