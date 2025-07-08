@@ -5,6 +5,7 @@ import { getConnection } from "../../config/db.js";
 import { config } from "dotenv";
 import twilio from "twilio";
 import sendmail from "../../helper/sendEmail.js";
+import mongoose from "mongoose";
 
 config();
 
@@ -472,6 +473,40 @@ const getDashboardSatisfiedGraph = async (
   }
 };
 
+const InPersonCount = mongoose.model(
+  "InPersonCount",
+  new mongoose.Schema(
+    {},
+    {
+      strict: false,
+      collection: "in_person_count",
+    }
+  )
+);
+const sendtableinfoEmail = async () => {
+  try {
+    // Wait for connection to be established
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const allData = await InPersonCount.find();
+
+    console.log(
+      `✅ Successfully retrieved ${allData.length} documents from in_person_count`
+    );
+
+    // Log the structure of first document
+    if (allData.length > 0) {
+      console.log("\n📋 Sample document structure:");
+      console.log(JSON.stringify(allData[0], null, 2));
+    }
+
+    return allData;
+  } catch (error) {
+    console.error("❌ Error retrieving data:", error);
+    throw error;
+  }
+};
+
 export const commonServices = {
   getBranchesInfo,
   getDashboardCardsInfo,
@@ -479,4 +514,5 @@ export const commonServices = {
   getDashboardSatisfiedGraph,
   sendNotification,
   sendUpsellEmail,
+  sendtableinfoEmail,
 };

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { httpHandler } from "../../helper/response/errorUtil.js";
 import authorization from "../../helper/authrization/auth.js";
 import { commonServices } from "./services.js";
-
+// import "../../config/mongodb.js";
 const router = Router();
 
 router.get(
@@ -73,6 +73,14 @@ router.post(
   httpHandler(async (req, res) => {
     const { to, branchName } = req.body;
     const result = await commonServices.sendUpsellEmail(to, branchName);
+    res.send(result);
+  })
+);
+router.get(
+  "/send-email-tableInfo",
+  // authorization.auth,
+  httpHandler(async (req, res) => {
+    const result = await commonServices.sendtableinfoEmail();
     res.send(result);
   })
 );
