@@ -27,8 +27,8 @@ const connectDB = async () => {
       console.error("❌ Email configuration invalid. Cron job not started.");
     }
   } catch (err) {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
+    console.error("MongoDB connection error:", err.message);
+    console.log("⚠️ App running without MongoDB connection. Some features may be unavailable.");
   }
 };
 
